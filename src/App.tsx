@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import HomePage from './components/HomePage';
 import RedirectPage from './components/RedirectPage';
 import AnalyticsPage from './components/AnalyticsPage';
+import FacebookScheduler from './components/FacebookScheduler';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -23,6 +24,10 @@ function App() {
 
   if (currentPath === '/analytics' || shortCode === 'analytics') {
     return <AnalyticsPage />;
+  }
+
+  if (currentPath === '/facebook-scheduler' || shortCode === 'facebook-scheduler') {
+    return <FacebookScheduler />;
   }
 
   return <RedirectPage shortCode={shortCode} />;

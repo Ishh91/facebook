@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link2, TrendingUp, Zap, BarChart3 } from 'lucide-react';
+import { Link2, TrendingUp, Zap, BarChart3, Facebook } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function HomePage() {
@@ -82,13 +82,22 @@ export default function HomePage() {
             <Link2 className="w-8 h-8 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">QuickLink</span>
           </div>
-          <a
-            href="/analytics"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <BarChart3 className="w-4 h-4" />
-            Analytics
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/facebook-scheduler"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <Facebook className="w-4 h-4" />
+              FB Scheduler
+            </a>
+            <a
+              href="/analytics"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </a>
+          </div>
         </div>
       </nav>
 
