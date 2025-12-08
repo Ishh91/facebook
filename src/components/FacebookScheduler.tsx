@@ -30,6 +30,7 @@ export default function FacebookScheduler() {
   const [loading, setLoading] = useState(true);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [userId, setUserId] = useState<string>('');
 
   const [accessToken, setAccessToken] = useState('');
   const [pageId, setPageId] = useState('');
@@ -46,15 +47,33 @@ export default function FacebookScheduler() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchAccounts();
-    fetchStories();
+    const getUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          setUserId(session.user.id);
+          fetchAccounts(session.user.id);
+          fetchStories();
+        } else {
+          setError('Please sign in to use the Facebook Scheduler');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Failed to get user session:', err);
+        setError('Authentication error. Please refresh and try again.');
+        setLoading(false);
+      }
+    };
+
+    getUser();
   }, []);
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (currentUserId: string) => {
     try {
       const { data, error } = await supabase
         .from('facebook_accounts')
         .select('*')
+        .eq('user_id', currentUserId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -94,10 +113,14 @@ export default function FacebookScheduler() {
         throw new Error('Access token and expiry date are required');
       }
 
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
       const { error: insertError } = await supabase
         .from('facebook_accounts')
         .insert({
-          user_id: 'anonymous',
+          user_id: userId,
           facebook_user_id: pageId || 'me',
           access_token: accessToken,
           page_id: pageId || null,
@@ -114,7 +137,7 @@ export default function FacebookScheduler() {
       setPageName('');
       setTokenExpiry('');
       setShowAddAccount(false);
-      fetchAccounts();
+      fetchAccounts(userId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add account');
     } finally {
@@ -246,6 +269,42 @@ export default function FacebookScheduler() {
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!userId && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <nav className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Home
+            </a>
+            <div className="flex items-center gap-2">
+              <Facebook className="w-6 h-6 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">Facebook Story Scheduler</span>
+            </div>
+          </div>
+        </nav>
+
+        <main className="max-w-7xl mx-auto px-4 py-12">
+          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+            <Facebook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Authentication Required</h2>
+            <p className="text-gray-600 mb-6">Please sign in to use the Facebook Story Scheduler</p>
+            <a
+              href="/"
+              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Home
+            </a>
+          </div>
+        </main>
       </div>
     );
   }
